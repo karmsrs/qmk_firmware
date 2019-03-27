@@ -1,2 +1,2 @@
-# The Default Planck Layout
+# Slightly edited default QWERTY layout.
 

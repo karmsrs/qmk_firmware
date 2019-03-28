@@ -149,7 +149,7 @@ int rgb_dynamic = 0;
  * |----+----+----+----+----+----+----+----+----+----+----+----|
  * | 36 | 37 | 38 | 39 | 40 | 41,42,43| 44 | 45 | 46 | 47 | 48 |
  * |----+----+----+----+----+----+----+----+----+----+----+----|
- * Set indices below of led's you want for each layer and color (Color A and color B)
+ * Set indices below of led's you want for each layer
  * Note: use 41 and 43 for GRID layout, 42 for MIT.
  */
 		

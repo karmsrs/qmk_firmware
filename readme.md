@@ -1,8 +1,7 @@
 # karmsrs User Fork
 
 Keymaps:
-- [Planck](../../keyboards/planck/keymaps/karmsrs)
-
+- [Planck](../../tree/karmsrs/keyboards/planck/keymaps/karmsrs)
 
 # Quantum Mechanical Keyboard Firmware
 

@@ -127,10 +127,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * `-----------------------------------------------------------------------------------'
  */
 [_NUMPAD] = LAYOUT_planck_grid(
-    XXXXXXX, KC_KP_7, KC_KP_8, KC_KP_9,   KC_KP_MINUS, KC_KP_ASTERISK, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,
+    XXXXXXX, KC_KP_7, KC_KP_8, KC_KP_9,   KC_KP_MINUS, KC_KP_ASTERISK, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_BSPC,
     XXXXXXX, KC_KP_4, KC_KP_5, KC_KP_6,   KC_KP_PLUS,  KC_KP_SLASH,    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
     XXXXXXX, KC_KP_1, KC_KP_2, KC_KP_3,   XXXXXXX,     XXXXXXX,        XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
-    EXT_NUM, KC_KP_0, XXXXXXX, KC_KP_DOT, KC_KP_ENTER, _______,        XXXXXXX, LOWER,   _______, _______, _______, _______
+    EXT_NUM, KC_KP_0, XXXXXXX, KC_KP_DOT, KC_KP_ENTER, KC_SPC,         XXXXXXX, LOWER,   KC_LEFT, KC_DOWN, KC_UP,   KC_RIGHT
 )
 
 };
@@ -161,13 +161,13 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   switch (keycode) {
     case NUMPAD:
       if (record->event.pressed) {
-        layer_on(_NUMPAD);
+        set_single_persistent_default_layer(_NUMPAD);
       }
       return false;
       break;
     case EXT_NUM:
       if (record->event.pressed) {
-        layer_off(_NUMPAD);
+        set_single_persistent_default_layer(_QWERTY);
       }
       return false;
       break;

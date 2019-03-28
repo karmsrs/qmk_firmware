@@ -138,65 +138,75 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 #ifdef RGB_MATRIX_H
 
+rgb_config_t rgb_matrix_config;
+
 int rgb_dynamic = 0;
 
-/* |----+----+----+----+----+----+----+----+----+----+----+----|
- * |  0 |  1 |  2 |  3 |  4 |  5 |  6 |  7 |  8 |  9 | 10 | 11 |
- * |----+----+----+----+----+----+----+----+----+----+----+----|
- * | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23 |
- * |----+----+----+----+----+----+----+----+----+----+----+----|
- * | 24 | 25 | 26 | 27 | 28 | 29 | 30 | 31 | 32 | 33 | 34 | 35 |
- * |----+----+----+----+----+----+----+----+----+----+----+----|
- * | 36 | 37 | 38 | 39 | 40 | 41,42,43| 44 | 45 | 46 | 47 | 48 |
- * |----+----+----+----+----+----+----+----+----+----+----+----|
- * Set indices below of led's you want for each layer
- * Note: use 41 and 43 for GRID layout, 42 for MIT.
- */
-		
-int RGB_DEFAULT[] = {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 
-                     12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 
-                     24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 
-                     36, 37, 38, 39, 40, 41, 43, 44, 45, 46, 47, 48};
-                     
-int RGB_LOWER[] =   {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 
-                         13, 14, 15, 16, 17, 18, 19, 20,         23, 
-                         25, 26, 27, 28, 29, 30,     32, 33, 
-                                                     45, 46, 47, 48};
-                                                   
-int RGB_RAISE[] =   {0,  1,  2,  3,  4,  5,  6,  7,  8,          11, 
-                         13, 14, 15, 16, 17, 18, 19, 20,         23, 
-                         25, 26, 27, 28, 29, 30,     32, 33, 
-                                                     45, 46, 47, 48};
-                    
-int RGB_ADJUST[] =  {    1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 
-                                 14, 15, 16, 17, 18, 
-                         25, 26, 27, 28, 29, 30, 31, 32,     34, 35, 
-                                                     45, 46, 47, 48};
-                    
-int RGB_NUMPAD[] =  {    1,  2,  3,                              11, 
-                         13, 14, 15, 16, 17, 
-                         25, 26, 27, 28, 29, 
-                     36, 37,     39, 40, 41, 43, 44, 45, 46, 47, 48};
-
-void rgb_layer_gradient(int rgb_layer) {
+void rgb_layer_gradient(int layer) {
 	int16_t layer_hue;
-	switch(rgb_layer) {
-		case RGB_LOWER:
-			layer_hue = (rgb_matrix_config.hue - 90) % 360;
-			break;
-		case RGB_RAISE:
+  int *rgb_layer;
+  int array_size;
+	switch(layer) {
+  /* |----+----+----+----+----+----+----+----+----+----+----+----|
+   * |  0 |  1 |  2 |  3 |  4 |  5 |  6 |  7 |  8 |  9 | 10 | 11 |
+   * |----+----+----+----+----+----+----+----+----+----+----+----|
+   * | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23 |
+   * |----+----+----+----+----+----+----+----+----+----+----+----|
+   * | 24 | 25 | 26 | 27 | 28 | 29 | 30 | 31 | 32 | 33 | 34 | 35 |
+   * |----+----+----+----+----+----+----+----+----+----+----+----|
+   * | 36 | 37 | 38 | 39 | 40 | 41,42,43| 44 | 45 | 46 | 47 | 48 |
+   * |----+----+----+----+----+----+----+----+----+----+----+----|
+   * Set indices below of led's you want for each layer
+   * Note: use 41 and 43 for GRID layout, 42 for MIT.
+   * Each Layer case needs to be mapped.
+   */
+    case _LOWER: ;   
+      int RGB_LOWER[] =   {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 
+                               13, 14, 15, 16, 17, 18, 19, 20,         23, 
+                               25, 26, 27, 28, 29, 30,     32, 33, 
+                                                           45, 46, 47, 48};
+      array_size = sizeof(RGB_LOWER) / sizeof(RGB_LOWER[0]);
+      rgb_layer = RGB_LOWER;
+      layer_hue = (rgb_matrix_config.hue - 90) % 360;
+      break;
+		case _RAISE: ;
+      int RGB_RAISE[] =   {0,  1,  2,  3,  4,  5,  6,  7,  8,          11, 
+                               13, 14, 15, 16, 17, 18, 19, 20,         23, 
+                               25, 26, 27, 28, 29, 30,     32, 33, 
+                                                           45, 46, 47, 48};
+      array_size = sizeof(RGB_RAISE) / sizeof(RGB_RAISE[0]);
+      rgb_layer = RGB_RAISE;
 			layer_hue = (rgb_matrix_config.hue + 90) % 360;
 			break;
-		case RGB_ADJUST:
+		case _ADJUST: ;
+      int RGB_ADJUST[] =  {    1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 
+                                   14, 15, 16, 17, 18, 
+                               25, 26, 27, 28, 29, 30, 31, 32,     34, 35, 
+                                                           45, 46, 47, 48};
+      array_size = sizeof(RGB_ADJUST) / sizeof(RGB_ADJUST[0]);
+      rgb_layer = RGB_ADJUST;
 			layer_hue = (rgb_matrix_config.hue + 180) % 360;
 			break;
-		case RGB_DEFAULT:
-		case RGB_NUMPAD:
-		default:
-			layer_hue = rgb_matrix_config.hue;
-			break;
+		case _NUMPAD: ;
+      int RGB_NUMPAD[] =  {    1,  2,  3,                              11, 
+                               13, 14, 15, 16, 17, 
+                               25, 26, 27, 28, 29, 
+                           36, 37,     39, 40, 41, 43, 44, 45, 46, 47, 48};
+      array_size = sizeof(RGB_NUMPAD) / sizeof(RGB_NUMPAD[0]);
+      rgb_layer = RGB_NUMPAD;
+      layer_hue = rgb_matrix_config.hue;
+      break;
+    case _QWERTY:
+		default: ;
+      int RGB_DEFAULT[] = {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 
+                           12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 
+                           24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 
+                           36, 37, 38, 39, 40, 41, 43, 44, 45, 46, 47, 48};
+      array_size = sizeof(RGB_DEFAULT) / sizeof(RGB_DEFAULT[0]);
+			rgb_layer = RGB_DEFAULT;
+      layer_hue = rgb_matrix_config.hue;
+      break;
 	}
-	int array_size = *(rgb_layer + 1) - rgb_layer;
 
     int16_t h1 = layer_hue;
     int16_t h2 = (layer_hue + 180) % 360;
@@ -257,26 +267,7 @@ void rgb_layer_gradient(int rgb_layer) {
 void rgb_matrix_indicators_user(void) {
 	if (rgb_dynamic == 1)
 	{
-		switch (biton32(layer_state)) {
-			case _LOWER:
-				rgb_layer_gradient(RGB_LOWER);
-				break;
-			case _RAISE:
-				rgb_layer_gradient(RGB_RAISE);
-				break;
-			case _ADJUST:
-				rgb_layer_gradient(RGB_ADJUST);
-				break;
-			case _NUMPAD:
-				rgb_layer_gradient(RGB_NUMPAD);
-				break;
-			case QWERTY:
-				rgb_layer_gradient(RGB_DEFAULT);
-				break;
-			default:
-				rgb_layer_gradient(RGB_DEFAULT);
-				break;
-		}
+		rgb_layer_gradient(biton32(layer_state));
 	}
 	// Disable light in middle of 2U position
     rgb_matrix_set_color(42, 0, 0, 0);

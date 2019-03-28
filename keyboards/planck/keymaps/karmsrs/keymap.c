@@ -29,7 +29,13 @@ enum planck_layers {
 
 enum planck_keycodes {
   NUMPAD = SAFE_RANGE,
-  EXT_NUM
+  EXT_NUM,
+  PRELUDE,
+  GAMEOVER,
+  TREASURE,
+  CLOSE_E,
+  MARCH,
+  VICTORY
 };
 
 #define LOWER MO(_LOWER)
@@ -68,7 +74,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  */
 [_LOWER] = LAYOUT_planck_grid(
     KC_GRV,  KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_DEL,
-    _______  KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_MINS, KC_EQL,  _______, _______, KC_BSLS,
+    _______, KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_MINS, KC_EQL,  _______, _______, KC_BSLS,
     _______, KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12,  _______, KC_LPRN, KC_RPRN, _______, _______,
     _______, _______, _______, _______, _______, _______, _______, _______, KC_HOME, KC_PGUP, KC_PGDN, KC_END
 ),
@@ -105,13 +111,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 [_ADJUST] = LAYOUT_planck_grid(
     _______, RESET,   DEBUG,   RGB_TOG, RGB_MOD, RGB_HUI, RGB_HUD, RGB_SAI, RGB_SAD,  RGB_VAI, RGB_VAD, KC_DEL ,
     _______, _______, MU_MOD,  AU_ON,   AU_OFF,  AG_NORM, AG_SWAP, _______, _______,  _______, _______, _______,
-    _______, MUV_DE,  MUV_IN,  MU_ON,   MU_OFF,  MI_ON,   MI_OFF,  TERM_ON, TERM_OFF, _______, _______, _______,
-    _______, _______, _______, _______, _______, _______, _______, _______, _______,  _______, _______, _______
-)
+    _______, MUV_DE,  MUV_IN,  MU_ON,   MU_OFF,  MI_ON,   MI_OFF,  TERM_ON, TERM_OFF, _______, PRELUDE, GAMEOVER,
+    _______, _______, _______, _______, _______, _______, _______, _______, TREASURE, CLOSE_E, MARCH,   VICTORY
+),
 
 /* NUMPAD
  * ,-----------------------------------------------------------------------------------.
- * |      |   7  |   8  |   9  |   -  |   *  |      |      |      |      |      |      |
+ * |      |   7  |   8  |   9  |   -  |   *  |      |      |      |      |      | Bksp |
  * |------+------+------+------+------+-------------+------+------+------+------+------|
  * |      |   4  |   5  |   6  |   +  |   /  |      |      |      |      |      |      |
  * |------+------+------+------+------+------|------+------+------+------+------+------|
@@ -121,17 +127,23 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * `-----------------------------------------------------------------------------------'
  */
 [_NUMPAD] = LAYOUT_planck_grid(
-    XXXXXXX, KC_KP_7, KC_KP_8, KC_KP_9,   KC_KP_MINUS, KC_KP_ASTERISK, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
-    XXXXXXX, KC_KP_4, KC_KP_5, KC_KP_6,   KC_KP_PLUS,  KC_KP_SPLASH,   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+    XXXXXXX, KC_KP_7, KC_KP_8, KC_KP_9,   KC_KP_MINUS, KC_KP_ASTERISK, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,
+    XXXXXXX, KC_KP_4, KC_KP_5, KC_KP_6,   KC_KP_PLUS,  KC_KP_SLASH,    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
     XXXXXXX, KC_KP_1, KC_KP_2, KC_KP_3,   XXXXXXX,     XXXXXXX,        XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
-    EXT_NUM, KC_KP_0, XXXXXXX, KC_KP_DOT, KC_KP_ENTER, _______,        XXXXXXX, LOWER,   _______, _______, _______, _______,
+    EXT_NUM, KC_KP_0, XXXXXXX, KC_KP_DOT, KC_KP_ENTER, _______,        XXXXXXX, LOWER,   _______, _______, _______, _______
 )
 
 };
 
 #ifdef AUDIO_ENABLE
-  float comm_song[][2]   = SONG(CLOSE_ENCOUNTERS_5_NOTE);
-  float unlock_song[][2] = SONG(ZELDA_TREASURE);
+  float comm_song[][2]     = SONG(CLOSE_ENCOUNTERS_5_NOTE);
+  float unlock_song[][2]   = SONG(ZELDA_TREASURE);
+  float prelude_song[][2]  = SONG(FF_PRELUDE);
+  float gameover_song[][2] = SONG(MARIO_GAMEOVER);
+  float treasure_song[][2] = SONG(ZELDA_TREASURE);
+  float close_e_song[][2]  = SONG(CLOSE_ENCOUNTERS_5_NOTE);
+  float march_song[][2]    = SONG(IMPERIAL_MARCH);
+  float victory_song[][2]  = SONG(VICTORY_FANFARE_SHORT);
 #endif
 
 uint32_t layer_state_set_user(uint32_t state) {
@@ -140,13 +152,6 @@ uint32_t layer_state_set_user(uint32_t state) {
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   switch (keycode) {
-    case QWERTY:
-      if (record->event.pressed) {
-        print("mode just switched to qwerty and this is a huge string\n");
-        set_single_persistent_default_layer(_QWERTY);
-      }
-      return false;
-      break;
     case NUMPAD:
       if (record->event.pressed) {
         layer_on(_NUMPAD);
@@ -156,6 +161,42 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     case EXT_NUM:
       if (record->event.pressed) {
         layer_off(_NUMPAD);
+      }
+      return false;
+      break;
+    case PRELUDE:
+      if (record->event.pressed) {
+        PLAY_SONG(prelude_song);
+      }
+      return false;
+      break;
+    case GAMEOVER:
+      if (record->event.pressed) {
+        PLAY_SONG(gameover_song);
+      }
+      return false;
+      break;
+    case TREASURE:
+      if (record->event.pressed) {
+        PLAY_SONG(treasure_song);
+      }
+      return false;
+      break;
+    case CLOSE_E:
+      if (record->event.pressed) {
+        PLAY_SONG(close_e_song);
+      }
+      return false;
+      break;
+    case MARCH:
+      if (record->event.pressed) {
+        PLAY_SONG(march_song);
+      }
+      return false;
+      break;
+    case VICTORY:
+      if (record->event.pressed) {
+        PLAY_SONG(victory_song);
       }
       return false;
       break;

@@ -161,13 +161,13 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   switch (keycode) {
     case NUMPAD:
       if (record->event.pressed) {
-        set_single_persistent_default_layer(_NUMPAD);
+        layer_on(_NUMPAD);
       }
       return false;
       break;
     case EXT_NUM:
       if (record->event.pressed) {
-        set_single_persistent_default_layer(_QWERTY);
+        layer_off(_NUMPAD);
       }
       return false;
       break;

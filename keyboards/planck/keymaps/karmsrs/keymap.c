@@ -29,6 +29,7 @@ enum planck_layers {
 
 enum planck_keycodes {
   NUMPAD = SAFE_RANGE,
+  RGB_DYN,
   EXT_NUM,
   PRELUDE,
   GAMEOVER,
@@ -110,7 +111,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  */
 [_ADJUST] = LAYOUT_planck_grid(
     _______, RESET,   DEBUG,   RGB_TOG, RGB_MOD, RGB_HUI, RGB_HUD, RGB_SAI, RGB_SAD,  RGB_VAI, RGB_VAD, KC_DEL ,
-    _______, _______, MU_MOD,  AU_ON,   AU_OFF,  AG_NORM, AG_SWAP, _______, _______,  _______, _______, _______,
+    _______, _______, MU_MOD,  AU_ON,   AU_OFF,  AG_NORM, AG_SWAP, _______, _______,  _______, _______, RGB_DYN,
     _______, MUV_DE,  MUV_IN,  MU_ON,   MU_OFF,  MI_ON,   MI_OFF,  TERM_ON, TERM_OFF, _______, PRELUDE, GAMEOVER,
     _______, _______, _______, _______, _______, _______, _______, _______, TREASURE, CLOSE_E, MARCH,   VICTORY
 ),
@@ -136,8 +137,148 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 };
 
 #ifdef RGB_MATRIX_H
+
+int rgb_dynamic = 0;
+
+/* |----+----+----+----+----+----+----+----+----+----+----+----|
+ * |  0 |  1 |  2 |  3 |  4 |  5 |  6 |  7 |  8 |  9 | 10 | 11 |
+ * |----+----+----+----+----+----+----+----+----+----+----+----|
+ * | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23 |
+ * |----+----+----+----+----+----+----+----+----+----+----+----|
+ * | 24 | 25 | 26 | 27 | 28 | 29 | 30 | 31 | 32 | 33 | 34 | 35 |
+ * |----+----+----+----+----+----+----+----+----+----+----+----|
+ * | 36 | 37 | 38 | 39 | 40 | 41,42,43| 44 | 45 | 46 | 47 | 48 |
+ * |----+----+----+----+----+----+----+----+----+----+----+----|
+ * Set indices below of led's you want for each layer and color (Color A and color B)
+ * Note: use 41 and 43 for GRID layout, 42 for MIT.
+ */
+		
+int RGB_DEFAULT[] = {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 
+                     12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 
+                     24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 
+                     36, 37, 38, 39, 40, 41, 43, 44, 45, 46, 47, 48};
+                     
+int RGB_LOWER[] =   {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 
+                         13, 14, 15, 16, 17, 18, 19, 20,         23, 
+                         25, 26, 27, 28, 29, 30,     32, 33, 
+                                                     45, 46, 47, 48};
+                                                   
+int RGB_RAISE[] =   {0,  1,  2,  3,  4,  5,  6,  7,  8,          11, 
+                         13, 14, 15, 16, 17, 18, 19, 20,         23, 
+                         25, 26, 27, 28, 29, 30,     32, 33, 
+                                                     45, 46, 47, 48};
+                    
+int RGB_ADJUST[] =  {    1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 
+                                 14, 15, 16, 17, 18, 
+                         25, 26, 27, 28, 29, 30, 31, 32,     34, 35, 
+                                                     45, 46, 47, 48};
+                    
+int RGB_NUMPAD[] =  {    1,  2,  3,                              11, 
+                         13, 14, 15, 16, 17, 
+                         25, 26, 27, 28, 29, 
+                     36, 37,     39, 40, 41, 43, 44, 45, 46, 47, 48};
+
+void rgb_layer_gradient(int rgb_layer) {
+	int16_t layer_hue;
+	switch(rgb_layer) {
+		case RGB_LOWER:
+			layer_hue = (rgb_matrix_config.hue - 90) % 360;
+			break;
+		case RGB_RAISE:
+			layer_hue = (rgb_matrix_config.hue + 90) % 360;
+			break;
+		case RGB_ADJUST:
+			layer_hue = (rgb_matrix_config.hue + 180) % 360;
+			break;
+		case RGB_DEFAULT:
+		case RGB_NUMPAD:
+		default:
+			layer_hue = rgb_matrix_config.hue;
+			break;
+	}
+	int array_size = *(rgb_layer + 1) - rgb_layer;
+
+    int16_t h1 = layer_hue;
+    int16_t h2 = (layer_hue + 180) % 360;
+    int16_t deltaH = h2 - h1;
+
+    // Take the shortest path between hues
+    if ( deltaH > 127 )
+    {
+        deltaH -= 256;
+    }
+    else if ( deltaH < -127 )
+    {
+        deltaH += 256;
+    }
+    // Divide delta by 4, this gives the delta per row
+    deltaH /= 4;
+
+    int16_t s1 = rgb_matrix_config.sat;
+    int16_t s2 = layer_hue;
+    int16_t deltaS = ( s2 - s1 ) / 4;
+
+    HSV hsv = { .h = 0, .s = 255, .v = rgb_matrix_config.val };
+    RGB rgb;
+    Point point;
+    for ( int i=0; i<DRIVER_LED_TOTAL; i++ )
+    {
+		if (i == 42)
+		{
+			rgb_matrix_set_color( i, 0, 0, 0 );
+		} else {
+			int found = 0;
+			for ( int j=0; j<array_size; j++)
+			{
+				if (rgb_layer[j] == i)
+				{
+					found = 1;
+					break;
+				}
+			}
+			if (found == 1)
+			{
+				// map_led_to_point( i, &point );
+				point = g_rgb_leds[i].point;
+				// The y range will be 0..64, map this to 0..4
+				uint8_t y = (point.y>>4);
+				// Relies on hue being 8-bit and wrapping
+				hsv.h = layer_hue + ( deltaH * y );
+				hsv.s = rgb_matrix_config.sat + ( deltaS * y );
+				rgb = hsv_to_rgb( hsv );
+				rgb_matrix_set_color( i, rgb.r, rgb.g, rgb.b );
+			} else {
+				rgb_matrix_set_color( i, 0, 0, 0 );
+			}
+		}
+	}
+}
+
 void rgb_matrix_indicators_user(void) {
-    // Disable light in middle of 2U position
+	if (rgb_dynamic == 1)
+	{
+		switch (biton32(layer_state)) {
+			case _LOWER:
+				rgb_layer_gradient(RGB_LOWER);
+				break;
+			case _RAISE:
+				rgb_layer_gradient(RGB_RAISE);
+				break;
+			case _ADJUST:
+				rgb_layer_gradient(RGB_ADJUST);
+				break;
+			case _NUMPAD:
+				rgb_layer_gradient(RGB_NUMPAD);
+				break;
+			case QWERTY:
+				rgb_layer_gradient(RGB_DEFAULT);
+				break;
+			default:
+				rgb_layer_gradient(RGB_DEFAULT);
+				break;
+		}
+	}
+	// Disable light in middle of 2U position
     rgb_matrix_set_color(42, 0, 0, 0);
 }
 #endif
@@ -207,6 +348,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       }
       return false;
       break;
+	 case RGB_DYN:
+		rgb_dynamic = 1 - rgb_dynamic;
+		return false;
+		break;
   }
   return true;
 }

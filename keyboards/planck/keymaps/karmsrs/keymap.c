@@ -135,6 +135,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 };
 
+#ifdef RGB_MATRIX_H
+void rgb_matrix_indicators_user(void) {
+    // Disable light in middle of 2U position
+    rgb_matrix_set_color(42, 0, 0, 0);
+}
+#endif
+
 #ifdef AUDIO_ENABLE
   float comm_song[][2]     = SONG(CLOSE_ENCOUNTERS_5_NOTE);
   float unlock_song[][2]   = SONG(ZELDA_TREASURE);
